@@ -1,9 +1,17 @@
+export const config = {
+    api: {
+        bodyParser: true,
+    },
+};
+
 const messages = [];
 
 export default function handler(req, res) {
+
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
@@ -12,7 +20,7 @@ export default function handler(req, res) {
     const gameId = req.query.game || 'global';
     
     if (req.method === 'POST') {
-        const { user, userId, msg } = req.body;
+        const { user, userId, msg } = req.body || {};
         
         const message = {
             user: user || 'Unknown',
@@ -24,12 +32,11 @@ export default function handler(req, res) {
         
         messages.push(message);
         
-        // храним последние 200 сообщений
         while (messages.length > 200) {
             messages.shift();
         }
         
-        return res.json({ success: true });
+        return res.status(200).json({ success: true });
     }
     
     if (req.method === 'GET') {
@@ -39,8 +46,8 @@ export default function handler(req, res) {
             m.game === gameId && m.time > after
         );
         
-        return res.json({ messages: filtered });
+        return res.status(200).json({ messages: filtered });
     }
     
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(200).json({ error: 'Unknown method' });
 }
